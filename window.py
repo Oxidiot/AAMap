@@ -31,7 +31,7 @@ class Window:
         self.clipboard_reader.start()
         self.world_map = Map()
 
-        self.updater_thread = threading.Thread(target = self.update_data_loop, args = (0.25, self.f3c_queue, self.world_map), daemon=True)
+        self.updater_thread = threading.Thread(target = self.update_data_loop, args = (1, self.f3c_queue, self.world_map), daemon=True)
         self.updater_thread.start()
 
         self.draw_plot()
@@ -74,14 +74,27 @@ class Window:
         self.draw_plot()
         # self.start()
 
+    def draw_new_arrow(self, map):
+        if map.get_curr_x() > map.zenith:
+            map.zenith = map.get_curr_x()
+        if map.get_curr_z() > map.zenith:
+            map.zenith = map.get_curr_z()
+        try:
+            plt.arrow(map.get_last_x(), map.get_last_z(), map.get_dx(), map.get_dz(), color = map.get_color(), zorder = 2)
+            plt.scatter(map.zenith, map.zenith, s=0)
+            plt.scatter(-(map.zenith), -(map.zenith), s=0)
+            plt.draw()
+        except IndexError:
+            return
 
-    def update_data_loop(self, interval:float, queue:queue, map):
+    def update_data_loop(self, interval:float, f3c_queue:queue, map):
         while True:
             time.sleep(interval)
-            while not queue.empty():
+            while not f3c_queue.empty():
                 # map.add_position(queue.get_nowait())
                 try:
-                    map.add_position(queue.get_nowait())
+                    map.add_position(f3c_queue.get_nowait())
+                    self.draw_new_arrow(map)
                 except queue.Empty:
                     break
 
@@ -91,15 +104,15 @@ class Window:
                 print(map.get_curr_coords())
                 # plt.scatter(map.get_curr_x(), map.get_curr_z(), s=30)
 
-                if map.get_curr_x() > map.zenith:
-                    map.zenith = map.get_curr_x()
-                if map.get_curr_z() > map.zenith:
-                    map.zenith = map.get_curr_z()
+                # if map.get_curr_x() > map.zenith:
+                #     map.zenith = map.get_curr_x()
+                # if map.get_curr_z() > map.zenith:
+                #     map.zenith = map.get_curr_z()
 
-                plt.arrow(map.get_last_x(), map.get_last_z(), map.get_dx(), map.get_dz(), color = map.get_color(), zorder = 2)
-                plt.scatter(map.zenith, map.zenith, s=0)
-                plt.scatter(-(map.zenith), -(map.zenith), s=0)
-                plt.draw()
+                # plt.arrow(map.get_last_x(), map.get_last_z(), map.get_dx(), map.get_dz(), color = map.get_color(), zorder = 2)
+                # plt.scatter(map.zenith, map.zenith, s=0)
+                # plt.scatter(-(map.zenith), -(map.zenith), s=0)
+                # plt.draw()
 
             except IndexError:
                 pass
@@ -117,12 +130,9 @@ class Window:
                 continue
             if clipboard_current[:8] == "/execute" and clipboard_current[26:29] != "end":
                 
-                
-                
                 clipboard_last = clipboard_current
                 callback(clipboard_current)
                 print(clipboard_current)
-
                 
 
 # /execute in minecraft:overworld run tp @s 453.30 74.00 829.30 420.94 -31.15   
