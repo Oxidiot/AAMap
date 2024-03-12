@@ -2,6 +2,7 @@ class Map:
 
     def __init__(self) -> None:
         self.coord_array = []
+        self.last_array = []
         self.zenith = 2500
 
     def add_position (self, f3c):
@@ -59,6 +60,9 @@ class Map:
         else:
             return "#003151"
 
+    def clear_array(self):
+        self.last_array = self.coord_array
+        self.coord_array = []
 
     def f3c_to_coords(self, clipboard:str) -> list:
 

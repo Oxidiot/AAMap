@@ -34,19 +34,15 @@ class Window:
         self.updater_thread = threading.Thread(target = self.update_data_loop, args = (0.25, self.f3c_queue, self.world_map), daemon=True)
         self.updater_thread.start()
 
-        plt.axis("equal")
-        plt.grid(visible = True, axis = "both", color = "#b2b2b2", snap = True, zorder = 1)
-        plt.xticks(ticks = [i*1024 for i in range(-40, 40)])
-        plt.yticks(ticks = [i*1024 for i in range(-40, 40)])
+        self.draw_plot()
 
-        plt.scatter(2500, 2500, s=0)
-        plt.scatter(-2500, -2500, s=0)
-
-        plt.draw()
         figure = plt.gcf()
         canvas = FigureCanvasTkAgg(figure = figure, master = self.root)
         canvas.draw()
         canvas.get_tk_widget().pack()
+
+        reset_button = Button(master=self.root, command = lambda: self.restart(self.world_map), text= "reset")
+        reset_button.place(x=20,y=20, width=40, height=20)
 
         # plt.scatter(25, 25, s=30)
 
@@ -58,6 +54,26 @@ class Window:
         # self.canvas.get_tk_widget().pack()
         # plt.scatter(50, 50, s = 3000)
         # self.canvas.draw()
+
+    def draw_plot(self):
+
+        plt.axis("equal")
+        plt.grid(visible = True, axis = "both", color = "#b2b2b2", snap = True, zorder = 1)
+        plt.xticks(ticks = [i*1024 for i in range(-40, 40)])
+        plt.yticks(ticks = [i*1024 for i in range(-40, 40)])
+
+        plt.scatter(2500, 2500, s=0)
+        plt.scatter(-2500, -2500, s=0)
+
+        plt.draw()
+
+    def restart(self, map):
+        pass
+        map.clear_array()
+        plt.clf()
+        self.draw_plot()
+        # self.start()
+
 
     def update_data_loop(self, interval:float, queue:queue, map):
         while True:
