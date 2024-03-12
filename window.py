@@ -7,16 +7,21 @@ import time
 import win32clipboard
 from map import Map
 
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+import matplotlib.colors as colors
+
 class Window:
     def build_window(self):
-        
+
         self.root = tk.Tk()
         self.root.config(bg="#fee5b5")
         self.root.title("AA Map")
-        self.root.geometry("300x300")
+        self.root.geometry("600x400")
         self.root.protocol("WM_DELETE_WINDOW", lambda: [print('Exiting from window close'), sys.exit(0)])
-        self.start()
 
+        self.start()
         self.root.mainloop()
 
     def start(self):
@@ -27,20 +32,59 @@ class Window:
 
         self.updater_thread = threading.Thread(target = self.update_data_loop, args = (0.25, self.f3c_queue, self.world_map), daemon=True)
         self.updater_thread.start()
-    
+
+        plt.axis("on")
+        plt.grid(visible = True, axis = "both", color = "#666666", snap = True, )
+        plt.xticks(ticks = [i*1024 for i in range(-20, 20)])
+        plt.yticks(ticks = [i*1024 for i in range(-20, 20)])
+        plt.scatter(2500, 2500, s=0)
+        plt.scatter(-2500, -2500, s=0)
+        plt.draw()
+        figure = plt.gcf()
+        canvas = FigureCanvasTkAgg(figure = figure, master = self.root)
+        canvas.draw()
+        canvas.get_tk_widget().pack()
+
+        # plt.scatter(25, 25, s=30)
+
+        # self.graph = Figure(figsize = (100, 100), dpi = 10)
+        # # self.plot = self.graph.add_subplot(111)
+        # # self.plot.plot([10], 10)
+        # self.canvas = FigureCanvasTkAgg(self.graph, master=self.root)
+        # self.canvas.draw()
+        # self.canvas.get_tk_widget().pack()
+        # plt.scatter(50, 50, s = 3000)
+        # self.canvas.draw()
+
     def update_data_loop(self, interval:float, queue:queue, map):
         while True:
             time.sleep(interval)
             while not queue.empty():
+                # map.add_position(queue.get_nowait())
                 try:
                     map.add_position(queue.get_nowait())
                 except queue.Empty:
                     break
-            print (map.coord_array)
+
+            print (map.get_coord_array())
+
+            try:
+                
+                
+                
+                print(map.get_curr_coords())
+                # plt.scatter(map.get_curr_x(), map.get_curr_z(), s=30)
+
+                plt.arrow(map.get_last_x(), map.get_last_z(), map.get_dx(), map.get_dz(), color = map.get_color())
+                plt.draw()
+
+            except IndexError:
+                pass
 
     def monitor_clipboard(self, interval:float, callback):
         # return
         clipboard_last = ""
+
         while True:
             time.sleep(interval)
             win32clipboard.OpenClipboard()
@@ -48,7 +92,10 @@ class Window:
             win32clipboard.CloseClipboard()
             if clipboard_current == clipboard_last: 
                 continue
-            if clipboard_current[:8] == "/execute":
+            if clipboard_current[:8] == "/execute" and clipboard_current[26:29] != "end":
                 clipboard_last = clipboard_current
                 callback(clipboard_current)
                 print(clipboard_current)
+
+# /execute in minecraft:overworld run tp @s 453.30 74.00 829.30 420.94 -31.15   
+# ^ example fc3
