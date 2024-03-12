@@ -63,6 +63,7 @@ class Map:
     def clear_array(self):
         self.last_array = self.coord_array
         self.coord_array = []
+        self.zenith = 2500
 
     def f3c_to_coords(self, clipboard:str) -> list:
 
