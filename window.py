@@ -31,7 +31,7 @@ class Window:
         self.clipboard_reader.start()
         self.world_map = Map()
 
-        self.updater_thread = threading.Thread(target = self.update_data_loop, args = (1, self.f3c_queue, self.world_map), daemon=True)
+        self.updater_thread = threading.Thread(target = self.update_data_loop, args = (0.25, self.f3c_queue, self.world_map), daemon=True)
         self.updater_thread.start()
 
         plt.axis("equal")
