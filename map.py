@@ -2,6 +2,7 @@ class Map:
 
     def __init__(self) -> None:
         self.coord_array = []
+        self.zenith = 2500
 
     def add_position (self, f3c):
         self.coord_array.append(self.f3c_to_coords(f3c))
@@ -75,7 +76,7 @@ class Map:
         z = z[0:(len(z) - 3)] 
         z = int(z) 
 
-        dim = (clip_array[2])[10:] # get dimension from f3c and cut out 
+        dim = (clip_array[2])[10:] # get dimension from f3c and cut out "minecraft:"
 
         data = [x, z, dim]
 

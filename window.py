@@ -11,6 +11,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
+import numpy as np
 
 class Window:
     def build_window(self):
@@ -30,15 +31,17 @@ class Window:
         self.clipboard_reader.start()
         self.world_map = Map()
 
-        self.updater_thread = threading.Thread(target = self.update_data_loop, args = (0.25, self.f3c_queue, self.world_map), daemon=True)
+        self.updater_thread = threading.Thread(target = self.update_data_loop, args = (1, self.f3c_queue, self.world_map), daemon=True)
         self.updater_thread.start()
 
-        plt.axis("on")
-        plt.grid(visible = True, axis = "both", color = "#666666", snap = True, )
-        plt.xticks(ticks = [i*1024 for i in range(-20, 20)])
-        plt.yticks(ticks = [i*1024 for i in range(-20, 20)])
+        plt.axis("equal")
+        plt.grid(visible = True, axis = "both", color = "#b2b2b2", snap = True, zorder = 1)
+        plt.xticks(ticks = [i*1024 for i in range(-40, 40)])
+        plt.yticks(ticks = [i*1024 for i in range(-40, 40)])
+
         plt.scatter(2500, 2500, s=0)
         plt.scatter(-2500, -2500, s=0)
+
         plt.draw()
         figure = plt.gcf()
         canvas = FigureCanvasTkAgg(figure = figure, master = self.root)
@@ -69,13 +72,17 @@ class Window:
             print (map.get_coord_array())
 
             try:
-                
-                
-                
                 print(map.get_curr_coords())
                 # plt.scatter(map.get_curr_x(), map.get_curr_z(), s=30)
 
-                plt.arrow(map.get_last_x(), map.get_last_z(), map.get_dx(), map.get_dz(), color = map.get_color())
+                if map.get_curr_x() > map.zenith:
+                    map.zenith = map.get_curr_x()
+                if map.get_curr_z() > map.zenith:
+                    map.zenith = map.get_curr_z()
+
+                plt.arrow(map.get_last_x(), map.get_last_z(), map.get_dx(), map.get_dz(), color = map.get_color(), zorder = 2)
+                plt.scatter(map.zenith, map.zenith, s=0)
+                plt.scatter(-(map.zenith), -(map.zenith), s=0)
                 plt.draw()
 
             except IndexError:
@@ -93,9 +100,14 @@ class Window:
             if clipboard_current == clipboard_last: 
                 continue
             if clipboard_current[:8] == "/execute" and clipboard_current[26:29] != "end":
+                
+                
+                
                 clipboard_last = clipboard_current
                 callback(clipboard_current)
                 print(clipboard_current)
+
+                
 
 # /execute in minecraft:overworld run tp @s 453.30 74.00 829.30 420.94 -31.15   
 # ^ example fc3
